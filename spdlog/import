@@ -1,0 +1,8 @@
+LICENSE   := MIT
+VERSION   := 1.11.0
+
+DOWNLOADS += spdlog.archive
+
+URL(spdlog)     := https://github.com/gabime/spdlog/archive/refs/tags/v$(VERSION).tar.gz
+DIR(spdlog)     := src
+SHA(spdlog)     := ca5cae8d6cac15dae0ec63b21d6ad3530070650f68076f3a4a862ca293a858bb
