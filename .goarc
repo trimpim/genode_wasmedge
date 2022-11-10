@@ -1,0 +1,18 @@
+
+#
+# use the depot directory of the genode repository
+#
+set depot_dir /data/genode/depot/
+
+#
+# use archive versions as they are present in the genode repository
+#
+set versions_from_genode_dir /data/genode/
+
+#
+# overwrite the content in the depot
+#
+set depot_overwrite 1
+
+
+# vim: ft=tcl
