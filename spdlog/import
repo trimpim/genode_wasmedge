@@ -1,8 +1,13 @@
-LICENSE   := MIT
-VERSION   := 1.11.0
+LICENSE      := MIT
+VERSION      := 1.11.0
 
-DOWNLOADS += spdlog.archive
+DOWNLOADS    += spdlog.archive
 
-URL(spdlog)     := https://github.com/gabime/spdlog/archive/refs/tags/v$(VERSION).tar.gz
-DIR(spdlog)     := src
-SHA(spdlog)     := ca5cae8d6cac15dae0ec63b21d6ad3530070650f68076f3a4a862ca293a858bb
+URL(spdlog)  := https://github.com/gabime/spdlog/archive/refs/tags/v$(VERSION).tar.gz
+DIR(spdlog)  := src
+SHA(spdlog)  := ca5cae8d6cac15dae0ec63b21d6ad3530070650f68076f3a4a862ca293a858bb
+
+PATCHES      := patches/01-tread_id.patch
+PATCHES      += patches/02-disable_128bit.patch
+
+# vim: ft=make

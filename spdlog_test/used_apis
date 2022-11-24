@@ -1,0 +1,5 @@
+trimpim/api/base
+trimpim/api/stdcxx
+trimpim/api/libc
+trimpim/api/posix
+trimpim/api/spdlog

@@ -1,0 +1,4 @@
+set version(trimpim/api/spdlog) "2022-11-14"
+set version(trimpim/src/spdlog) "2022-11-14"
+
+# vim: ft=tcl

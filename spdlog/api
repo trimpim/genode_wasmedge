@@ -1,0 +1,8 @@
+include/spdlog/
+include/spdlog/cfg/
+include/spdlog/details/
+include/spdlog/fmt/
+include/spdlog/fmt/bundled/
+include/spdlog/sinks/
+
+# vim: ft=tcl

@@ -1,0 +1,143 @@
++++ src/include/spdlog/fmt/bundled/core.h	2022-11-24 10:29:29.930369149 +0100
+@@ -382,19 +382,19 @@
+ template <typename T> struct std_string_view {};
+ #endif
+ 
+-#ifdef FMT_USE_INT128
+-// Do nothing.
+-#elif defined(__SIZEOF_INT128__) && !defined(__NVCC__) && \
+-    !(FMT_CLANG_VERSION && FMT_MSC_VERSION)
+-#  define FMT_USE_INT128 1
+-using int128_opt = __int128_t;  // An optional native 128-bit integer.
+-using uint128_opt = __uint128_t;
+-template <typename T> inline auto convert_for_visit(T value) -> T {
+-  return value;
+-}
+-#else
++//#ifdef FMT_USE_INT128
++//// Do nothing.
++//#elif defined(__SIZEOF_INT128__) && !defined(__NVCC__) && \
++//    !(FMT_CLANG_VERSION && FMT_MSC_VERSION)
++//#  define FMT_USE_INT128 1
++//using int128_opt = __int128_t;  // An optional native 128-bit integer.
++//using uint128_opt = __uint128_t;
++//template <typename T> inline auto convert_for_visit(T value) -> T {
++//  return value;
++//}
++//#else
+ #  define FMT_USE_INT128 0
+-#endif
++//#endif
+ #if !FMT_USE_INT128
+ enum class int128_opt {};
+ enum class uint128_opt {};
+--- src/include/spdlog/fmt/bundled/format-inl.h	2022-11-24 10:27:45.952595676 +0100
++++ src/include/spdlog/fmt/bundled/format-inl.h	2022-11-24 10:30:49.711729106 +0100
+@@ -145,14 +145,14 @@
+ 
+ // Computes 128-bit result of multiplication of two 64-bit unsigned integers.
+ inline uint128_fallback umul128(uint64_t x, uint64_t y) noexcept {
+-#if FMT_USE_INT128
+-  auto p = static_cast<uint128_opt>(x) * static_cast<uint128_opt>(y);
+-  return {static_cast<uint64_t>(p >> 64), static_cast<uint64_t>(p)};
+-#elif defined(_MSC_VER) && defined(_M_X64)
+-  auto result = uint128_fallback();
+-  result.lo_ = _umul128(x, y, &result.hi_);
+-  return result;
+-#else
++//#if FMT_USE_INT128
++//  auto p = static_cast<uint128_opt>(x) * static_cast<uint128_opt>(y);
++//  return {static_cast<uint64_t>(p >> 64), static_cast<uint64_t>(p)};
++//#elif defined(_MSC_VER) && defined(_M_X64)
++//  auto result = uint128_fallback();
++//  result.lo_ = _umul128(x, y, &result.hi_);
++//  return result;
++//#else
+   const uint64_t mask = static_cast<uint64_t>(max_value<uint32_t>());
+ 
+   uint64_t a = x >> 32;
+@@ -169,21 +169,21 @@
+ 
+   return {ac + (intermediate >> 32) + (ad >> 32) + (bc >> 32),
+           (intermediate << 32) + (bd & mask)};
+-#endif
++//#endif
+ }
+ 
+ // Implementation of Dragonbox algorithm: https://github.com/jk-jeon/dragonbox.
+ namespace dragonbox {
+ // Computes upper 64 bits of multiplication of two 64-bit unsigned integers.
+ inline uint64_t umul128_upper64(uint64_t x, uint64_t y) noexcept {
+-#if FMT_USE_INT128
+-  auto p = static_cast<uint128_opt>(x) * static_cast<uint128_opt>(y);
+-  return static_cast<uint64_t>(p >> 64);
+-#elif defined(_MSC_VER) && defined(_M_X64)
+-  return __umulh(x, y);
+-#else
++//#if FMT_USE_INT128
++//  auto p = static_cast<uint128_opt>(x) * static_cast<uint128_opt>(y);
++//  return static_cast<uint64_t>(p >> 64);
++//#elif defined(_MSC_VER) && defined(_M_X64)
++//  return __umulh(x, y);
++//#else
+   return umul128(x, y).high();
+-#endif
++//#endif
+ }
+ 
+ // Computes upper 128 bits of multiplication of a 64-bit unsigned integer and a
+--- src/include/spdlog/fmt/bundled/format.h	2022-11-24 10:27:45.952595676 +0100
++++ src/include/spdlog/fmt/bundled/format.h	2022-11-24 10:29:29.934369217 +0100
+@@ -424,7 +424,8 @@
+   }
+ };
+ 
+-using uint128_t = conditional_t<FMT_USE_INT128, uint128_opt, uint128_fallback>;
++//using uint128_t = conditional_t<FMT_USE_INT128, uint128_opt, uint128_fallback>;
++using uint128_t = uint128_fallback;
+ 
+ #ifdef UINTPTR_MAX
+ using uintptr_t = ::uintptr_t;
+@@ -1061,11 +1062,11 @@
+     count += 4;
+   }
+ }
+-#if FMT_USE_INT128
+-FMT_CONSTEXPR inline auto count_digits(uint128_opt n) -> int {
+-  return count_digits_fallback(n);
+-}
+-#endif
++//#if FMT_USE_INT128
++//FMT_CONSTEXPR inline auto count_digits(uint128_opt n) -> int {
++//  return count_digits_fallback(n);
++//}
++//#endif
+ 
+ #ifdef FMT_BUILTIN_CLZLL
+ // It is a separate function rather than a part of count_digits to workaround
+@@ -1455,11 +1456,11 @@
+ 
+ // Computes lhs * rhs / pow(2, 64) rounded to nearest with half-up tie breaking.
+ FMT_CONSTEXPR inline uint64_t multiply(uint64_t lhs, uint64_t rhs) {
+-#if FMT_USE_INT128
+-  auto product = static_cast<__uint128_t>(lhs) * rhs;
+-  auto f = static_cast<uint64_t>(product >> 64);
+-  return (static_cast<uint64_t>(product) & (1ULL << 63)) != 0 ? f + 1 : f;
+-#else
++//#if FMT_USE_INT128
++//  auto product = static_cast<__uint128_t>(lhs) * rhs;
++//  auto f = static_cast<uint64_t>(product >> 64);
++//  return (static_cast<uint64_t>(product) & (1ULL << 63)) != 0 ? f + 1 : f;
++//#else
+   // Multiply 32-bit parts of significands.
+   uint64_t mask = (1ULL << 32) - 1;
+   uint64_t a = lhs >> 32, b = lhs & mask;
+@@ -1468,7 +1469,7 @@
+   // Compute mid 64-bit of result and round.
+   uint64_t mid = (bd >> 32) + (ad & mask) + (bc & mask) + (1U << 31);
+   return ac + (ad >> 32) + (bc >> 32) + (mid >> 32);
+-#endif
++//#endif
+ }
+ 
+ FMT_CONSTEXPR inline fp operator*(fp x, fp y) {

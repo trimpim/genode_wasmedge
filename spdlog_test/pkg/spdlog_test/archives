@@ -1,0 +1,8 @@
+trimpim/src/libc
+trimpim/src/stdcxx
+trimpim/src/posix
+trimpim/src/spdlog
+trimpim/src/vfs
+trimpim/src/vfs_lwip
+trimpim/src/vfs_pipe
+trimpim/src/nic_router
