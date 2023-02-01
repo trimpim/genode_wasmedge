@@ -1,0 +1,13 @@
+
+#
+# do nat use strict warnings for C++ code
+#
+set warn_strict 0
+
+#
+# license file to use
+#
+set license src/libunwind/LICENSE.TXT
+
+
+# vim: ft=tcl

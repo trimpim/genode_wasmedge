@@ -1,0 +1,11 @@
++++ src/libcxx/CMakeLists.txt	2023-01-10 11:44:56.521612715 +0100
+@@ -922,3 +922,9 @@
+ if (LIBCXX_INCLUDE_DOCS)
+   add_subdirectory(docs)
+ endif()
++
++file(COPY include
++    DESTINATION include/
++    FILES_MATCHING
++        PATTERN *
++)

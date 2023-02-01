@@ -1,8 +1,19 @@
 
+set version(genodelabs/api/base)    2022-10-11
+set version(genodelabs/api/libc)    2022-08-30
+set version(genodelabs/api/posix)   2020-05-17
+set version(genodelabs/api/so)      2020-05-17
+
 #
 # overwrite the content in the depot
 #
 set depot_overwrite 1
+
+
+#
+# set archidecture to build for iMX8
+#
+set arch  arm_v8a
 
 
 # vim: ft=tcl
