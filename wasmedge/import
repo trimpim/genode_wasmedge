@@ -1,0 +1,23 @@
+LICENSE        := Apache
+VERSION        := 0.11.2
+DOWNLOADS      := WasmEdge.archive
+
+URL(WasmEdge)  := https://github.com/WasmEdge/WasmEdge/archive/refs/tags/$(VERSION).tar.gz
+DIR(WasmEdge)  := src
+SHA(WasmEdge)  := aa1d484707aecd66833cf75f8428372203f4f470f47c44ff174d7ef1706ffe76
+
+PATCHES        += patches/01-cmake.patch
+PATCHES        += patches/02-source.patch
+PATCHES        += patches/03-use_prebuilt_spdlog.patch
+PATCHES        += patches/04-do_not_use_ld_and_rt.patch
+PATCHES        += patches/05-source2.patch
+PATCHES        += patches/06-no_thread_local.patch
+PATCHES        += patches/07-main_visibility.patch
+PATCHES        += patches/08-use_gcc_eh.patch
+PATCHES        += patches/09-loader.patch
+PATCHES        += patches/10-allocator.patch
+PATCHES        += patches/11-no_mmap_loader.patch
+PATCHES        += patches/12-fdstat.patch
+PATCHES        += patches/13-unimplemented-syscalls.patch
+
+# vim: ft=make

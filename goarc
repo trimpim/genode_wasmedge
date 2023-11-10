@@ -1,0 +1,12 @@
+set arch x86_64
+
+set public_dir var/public
+set depot_dir  var/depot
+
+#
+# overwrite the content in the depot
+#
+set depot_overwrite 1
+
+
+# vim: ft=tcl

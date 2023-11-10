@@ -1,0 +1,5 @@
+-DCMAKE_BUILD_TYPE:string=Release
+-DBUILD_SHARED_LIBS:bool=true
+-DCMAKE_SKIP_BUILD_RPATH:bool=false
+-DLLVM_INCLUDE_DOCS:bool=false
+-Wno-dev

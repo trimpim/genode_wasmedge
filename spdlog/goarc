@@ -1,0 +1,6 @@
+# disable strict warnings (-Werror=effc++)
+set warn_strict 0
+
+set license src/LICENSE
+
+# vim: ft=tcl

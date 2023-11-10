@@ -1,0 +1,29 @@
++++ src/tools/wasmedge/CMakeLists.txt	2022-12-20 09:39:00.538013183 +0100
+@@ -25,7 +25,6 @@
+ endif()
+ 
+ wasmedge_add_executable(wasmedge
+-  wincli_helper.cpp
+   wasmedger.cpp
+ )
+ 
+--- src/tools/wasmedge/wasmedger.cpp	2022-12-20 09:34:01.827973766 +0100
++++ src/tools/wasmedge/wasmedger.cpp	2022-12-20 09:57:56.822565376 +0100
+@@ -2,16 +2,8 @@
+ // SPDX-FileCopyrightText: 2019-2022 Second State INC
+ 
+ #include "wasmedge/wasmedge.h"
+-#include "wasmedge/wincli_helper.h"
+ 
++__attribute__((visibility("default")))
+ int main(int Argc, const char *Argv[]) {
+-#if WASMEDGE_WINCLI_HELPER_ENABLE
+-  WasmEdge_SetConsoleOutputCPtoUTF8();
+-  (void)Argv; // We can not ensure the encoding of Argv, make compiler slient.
+-  auto ArgvUTF8 =
+-      WasmEdge_CommandLineToUTF8ArgvW(WasmEdge_GetCommandLineW(), &Argc);
+-  return WasmEdge_Driver_Tool(Argc, ArgvUTF8);
+-#else
+   return WasmEdge_Driver_Tool(Argc, Argv);
+-#endif
+ }

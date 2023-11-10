@@ -1,0 +1,151 @@
++++ src/include/common/defines.h	2022-12-12 13:52:07.936120438 +0100
+@@ -18,6 +18,7 @@
+ 
+ #define WASMEDGE_OS_LINUX 1
+ #define WASMEDGE_OS_MACOS 0
++#define WASMEDGE_OS_GENODE 0
+ #define WASMEDGE_OS_WINDOWS 0
+ #define WASMEDGE_LIB_EXTENSION ".so"
+ 
+@@ -26,6 +27,7 @@
+ 
+ #define WASMEDGE_OS_LINUX 0
+ #define WASMEDGE_OS_MACOS 1
++#define WASMEDGE_OS_GENODE 0
+ #define WASMEDGE_OS_WINDOWS 0
+ #define WASMEDGE_LIB_EXTENSION ".dylib"
+ 
+@@ -34,9 +36,19 @@
+ 
+ #define WASMEDGE_OS_LINUX 0
+ #define WASMEDGE_OS_MACOS 0
++#define WASMEDGE_OS_GENODE 0
+ #define WASMEDGE_OS_WINDOWS 1
+ #define WASMEDGE_LIB_EXTENSION ".dll"
+ 
++#elif defined(__GENODE__)
++
++#define WASMEDGE_OS_LINUX 0
++#define WASMEDGE_OS_MACOS 0
++#define WASMEDGE_OS_GENODE 1
++#define WASMEDGE_OS_WINDOWS 0
++#define MAP_NORESERVE 0
++#define WASMEDGE_LIB_EXTENSION ".lib.so"
++
+ #else
+ 
+ #error Unsupported environment!
+--- src/include/host/wasi/inode.h	2022-12-12 13:30:49.610031623 +0100
++++ src/include/host/wasi/inode.h	2022-12-12 15:32:40.677114416 +0100
+@@ -12,7 +12,7 @@
+ #include <string_view>
+ #include <vector>
+ 
+-#if WASMEDGE_OS_LINUX || WASMEDGE_OS_MACOS
++#if WASMEDGE_OS_LINUX || WASMEDGE_OS_MACOS || WASMEDGE_OS_GENODE
+ #include <dirent.h>
+ #include <sys/stat.h>
+ #include <unordered_map>
+@@ -31,7 +31,7 @@
+ 
+ #endif
+ 
+-#if WASMEDGE_OS_LINUX
++#if WASMEDGE_OS_LINUX || WASMEDGE_OS_GENODE
+ #if defined(__GLIBC_PREREQ)
+ #if defined(_LIBCPP_GLIBC_PREREQ)
+ #undef _LIBCPP_GLIBC_PREREQ
+@@ -50,7 +50,7 @@
+ namespace Host {
+ namespace WASI {
+ 
+-#if WASMEDGE_OS_LINUX || WASMEDGE_OS_MACOS
++#if WASMEDGE_OS_LINUX || WASMEDGE_OS_MACOS || WASMEDGE_OS_GENODE
+ struct FdHolder {
+   FdHolder(const FdHolder &) = delete;
+   FdHolder &operator=(const FdHolder &) = delete;
+@@ -115,7 +115,7 @@
+ };
+ #endif
+ 
+-#if WASMEDGE_OS_LINUX
++#if WASMEDGE_OS_LINUX || WASMEDGE_OS_GENODE
+ struct TimerHolder {
+   TimerHolder(const TimerHolder &) = delete;
+   TimerHolder &operator=(const TimerHolder &) = delete;
+@@ -175,7 +175,7 @@
+ class Epoller;
+ 
+ class INode
+-#if WASMEDGE_OS_LINUX || WASMEDGE_OS_MACOS
++#if WASMEDGE_OS_LINUX || WASMEDGE_OS_MACOS || WASMEDGE_OS_GENODE
+     : public FdHolder
+ #elif WASMEDGE_OS_WINDOWS
+     : public HandleHolder
+@@ -650,7 +650,7 @@
+ 
+   __wasi_filetype_t unsafeFiletype() const noexcept;
+ 
+-#if WASMEDGE_OS_LINUX || WASMEDGE_OS_MACOS
++#if WASMEDGE_OS_LINUX || WASMEDGE_OS_MACOS || WASMEDGE_OS_GENODE
+ public:
+   using FdHolder::FdHolder;
+ 
+@@ -677,7 +677,7 @@
+ };
+ 
+ class Poller
+-#if WASMEDGE_OS_LINUX || WASMEDGE_OS_MACOS
++#if WASMEDGE_OS_LINUX || WASMEDGE_OS_MACOS || WASMEDGE_OS_GENODE
+     : public FdHolder
+ #endif
+ {
+@@ -706,7 +706,7 @@
+ private:
+   std::vector<__wasi_event_t> Events;
+ 
+-#if WASMEDGE_OS_LINUX
++#if WASMEDGE_OS_LINUX || WASMEDGE_OS_GENODE
+ private:
+   struct Timer : public FdHolder {
+     Timer(const Timer &) = delete;
+@@ -738,7 +738,7 @@
+ };
+ 
+ class Epoller
+-#if WASMEDGE_OS_LINUX || WASMEDGE_OS_MACOS
++#if WASMEDGE_OS_LINUX || WASMEDGE_OS_MACOS || WASMEDGE_OS_GENODE
+     : public FdHolder
+ #endif
+ {
+@@ -777,7 +777,7 @@
+ private:
+   std::vector<__wasi_event_t> Events;
+ 
+-#if WASMEDGE_OS_LINUX
++#if WASMEDGE_OS_LINUX || WASMEDGE_OS_GENODE
+ private:
+   struct Timer : public FdHolder {
+     Timer(const Timer &) = delete;
+--- src/lib/aot/compiler.cpp	2022-12-12 13:30:49.614031816 +0100
++++ src/lib/aot/compiler.cpp	2022-12-12 13:58:26.162474493 +0100
+@@ -4874,6 +4874,8 @@
+     WriteByte(OS, UINT8_C(2));
+ #elif WASMEDGE_OS_WINDOWS
+     WriteByte(OS, UINT8_C(3));
++#elif WASMEDGE_OS_GENODE
++    WriteByte(OS, UINT8_C(4));
+ #else
+ #error Unsupported operating system!
+ #endif
+--- src/lib/loader/shared_library.cpp	2022-12-12 13:30:49.618032010 +0100
++++ src/lib/loader/shared_library.cpp	2022-12-12 13:54:05.933855658 +0100
+@@ -18,7 +18,7 @@
+ #include <boost/winapi/error_handling.hpp>
+ #include <boost/winapi/local_memory.hpp>
+ namespace winapi = boost::winapi;
+-#elif WASMEDGE_OS_LINUX || WASMEDGE_OS_MACOS
++#elif WASMEDGE_OS_LINUX || WASMEDGE_OS_MACOS || WASMEDGE_OS_GENODE
+ #include <dlfcn.h>
+ #else
+ #error Unsupported os!

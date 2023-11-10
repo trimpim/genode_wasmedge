@@ -1,0 +1,44 @@
++++ src/libcxx/src/new.cpp	2023-01-09 09:43:00.832773953 +0100
+@@ -126,42 +126,36 @@
+     return p;
+ }
+ 
+-_LIBCPP_WEAK
+ void
+ operator delete(void* ptr) _NOEXCEPT
+ {
+     ::free(ptr);
+ }
+ 
+-_LIBCPP_WEAK
+ void
+ operator delete(void* ptr, const std::nothrow_t&) _NOEXCEPT
+ {
+     ::operator delete(ptr);
+ }
+ 
+-_LIBCPP_WEAK
+ void
+ operator delete(void* ptr, size_t) _NOEXCEPT
+ {
+     ::operator delete(ptr);
+ }
+ 
+-_LIBCPP_WEAK
+ void
+ operator delete[] (void* ptr) _NOEXCEPT
+ {
+     ::operator delete(ptr);
+ }
+ 
+-_LIBCPP_WEAK
+ void
+ operator delete[] (void* ptr, const std::nothrow_t&) _NOEXCEPT
+ {
+     ::operator delete[](ptr);
+ }
+ 
+-_LIBCPP_WEAK
+ void
+ operator delete[] (void* ptr, size_t) _NOEXCEPT
+ {

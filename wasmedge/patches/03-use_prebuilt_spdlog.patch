@@ -1,0 +1,58 @@
++++ src/lib/api/CMakeLists.txt	2022-12-13 14:10:41.918509548 +0100
+@@ -2,6 +2,7 @@
+ # SPDX-FileCopyrightText: 2019-2022 Second State INC
+ 
+ find_package(spdlog QUIET)
++set(spdlog_FOUND TRUE)
+ add_definitions(-DWASMEDGE_COMPILE_LIBRARY)
+ if(WASMEDGE_BUILD_AOT_RUNTIME)
+   add_definitions(-DWASMEDGE_BUILD_AOT_RUNTIME)
+@@ -108,10 +108,10 @@
+     PRIVATE
+     wasmedgeCAPI
+   )
+-  target_link_libraries(wasmedge_shared
+-    PUBLIC
+-    spdlog::spdlog
+-  )
++#  target_link_libraries(wasmedge_shared
++#    PUBLIC
++#    spdlog::spdlog
++#  )
+ 
+   target_include_directories(wasmedge_shared
+     PUBLIC
+@@ -128,7 +128,7 @@
+ 
+ if(WASMEDGE_BUILD_STATIC_LIB)
+ 
+-  wasmedge_add_static_lib_component_command(spdlog::spdlog)
++#  wasmedge_add_static_lib_component_command(spdlog::spdlog)
+   wasmedge_add_static_lib_component_command(wasmedgeSystem)
+   wasmedge_add_static_lib_component_command(wasmedgeCommon)
+   wasmedge_add_static_lib_component_command(wasmedgePO)
+--- src/lib/common/CMakeLists.txt	2022-12-13 14:05:44.754010126 +0100
++++ src/lib/common/CMakeLists.txt	2022-12-13 14:10:46.818585890 +0100
+@@ -2,6 +2,7 @@
+ # SPDX-FileCopyrightText: 2019-2022 Second State INC
+ 
+ find_package(spdlog QUIET)
++set(spdlog_FOUND TRUE)
+ if(spdlog_FOUND)
+ else()
+   FetchContent_Declare(
+@@ -39,10 +39,10 @@
+   int128.cpp
+ )
+ 
+-target_link_libraries(wasmedgeCommon
+-  PUBLIC
+-  spdlog::spdlog
+-)
++#target_link_libraries(wasmedgeCommon
++#  PUBLIC
++#  spdlog::spdlog
++#)
+ 
+ target_include_directories(wasmedgeCommon
+   PUBLIC

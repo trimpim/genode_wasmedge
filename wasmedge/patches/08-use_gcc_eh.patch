@@ -1,0 +1,19 @@
++++ src/lib/api/CMakeLists.txt	2023-01-09 10:02:34.184165919 +0100
+@@ -107,6 +107,8 @@
+   target_link_libraries(wasmedge_shared
+     PRIVATE
+     wasmedgeCAPI
++    # https://forums.developer.nvidia.com/t/undefined-reference-to-gcc-personality-v0/131127/3
++    gcc_eh
+   )
+ #  target_link_libraries(wasmedge_shared
+ #    PUBLIC
++++ src/tools/wasmedge/CMakeLists.txt	2023-01-09 10:01:52.558203599 +0100
+@@ -41,5 +41,7 @@
+   target_link_libraries(wasmedge
+     PRIVATE
+     wasmedge_shared
++    # https://forums.developer.nvidia.com/t/undefined-reference-to-gcc-personality-v0/131127/3
++    gcc_eh
+   )
+ endif()

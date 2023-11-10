@@ -1,0 +1,27 @@
+#!/usr/bin/expect -f
+
+# Tests the current goa project.
+
+source [file join [file dirname [info script]] "../../tool/pure_functions.inc"]
+
+set goa [installed_command goa]
+set curl [installed_command curl]
+
+set host 169.254.71.254
+set port 80
+
+spawn $goa -C [script_dir] run
+set goa_spawn_id $spawn_id
+expect_before { -i $goa_spawn_id eof { exit 1 } }
+set timeout 300
+run_spawned_until {Genode .*} $timeout $goa_spawn_id
+
+# test the http_server
+run_spawned_until {wasmedge] new connection at 80} $timeout $goa_spawn_id
+spawn $curl -X POST http://$host:$port -d "hello world\n"
+run_spawned_until "hello world" 5 $spawn_id
+if { [wait_exit $spawn_id] != 0 } {
+	print_red "test failed"
+} else {
+	print_green "test successful"
+}

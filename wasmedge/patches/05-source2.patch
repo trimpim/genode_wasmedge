@@ -1,0 +1,378 @@
++++ src/include/host/wasi/inode.h	2023-01-25 09:35:55.000000000 +0100
+@@ -20,6 +20,14 @@
+ #include <boost/align/aligned_allocator.hpp>
+ #endif
+ 
++#if WASMEDGE_OS_GENODE
++#define __BSD_VISIBLE 1
++#include <dirent.h>
++#include <sys/stat.h>
++#include <unordered_map>
++#include <boost/align/aligned_allocator.hpp>
++#endif
++
+ #if WASMEDGE_OS_WINDOWS
+ #include <boost/winapi/basic_types.hpp>
+ 
+@@ -719,7 +727,7 @@
+                             __wasi_timestamp_t Precision,
+                             __wasi_subclockflags_t Flags) noexcept;
+ 
+-#if !__GLIBC_PREREQ(2, 8)
++#if WASMEDGE_OS_GENODE || !__GLIBC_PREREQ(2, 8)
+     FdHolder Notify;
+     TimerHolder TimerId;
+ #endif
+@@ -790,7 +798,7 @@
+                             __wasi_timestamp_t Precision,
+                             __wasi_subclockflags_t Flags) noexcept;
+ 
+-#if !__GLIBC_PREREQ(2, 8)
++#if WASMEDGE_OS_GENODE || !__GLIBC_PREREQ(2, 8)
+     FdHolder Notify;
+     TimerHolder TimerId;
+ #endif
++++ src/lib/host/wasi/clock-linux.cpp	2023-01-25 09:37:51.000000000 +0100
+@@ -2,7 +2,7 @@
+ // SPDX-FileCopyrightText: 2019-2022 Second State INC
+ 
+ #include "common/defines.h"
+-#if WASMEDGE_OS_LINUX
++#if WASMEDGE_OS_LINUX || WASMEDGE_OS_GENODE
+ 
+ #include "host/wasi/clock.h"
+ #include "linux.h"
++++ src/lib/host/wasi/environ-linux.cpp	2023-01-25 09:58:32.000000000 +0100
+@@ -2,7 +2,7 @@
+ // SPDX-FileCopyrightText: 2019-2022 Second State INC
+ 
+ #include "common/defines.h"
+-#if WASMEDGE_OS_LINUX
++#if WASMEDGE_OS_LINUX || WASMEDGE_OS_GENODE
+ 
+ #include "common/errcode.h"
+ #include "host/wasi/environ.h"
+@@ -99,12 +99,14 @@
+   case __WASI_SIGNAL_WINCH:
+     SysSignal = SIGWINCH;
+     break;
++#if !WASMEDGE_OS_GENODE
+   case __WASI_SIGNAL_POLL:
+     SysSignal = SIGPOLL;
+     break;
+   case __WASI_SIGNAL_PWR:
+     SysSignal = SIGPWR;
+     break;
++#endif
+   case __WASI_SIGNAL_SYS:
+     SysSignal = SIGSYS;
+     break;
++++ src/lib/host/wasi/inode-linux.cpp	2023-01-25 13:05:32.517999862 +0100
+@@ -4,7 +4,7 @@
+ #include "common/defines.h"
+ #include <cstdint>
+ #include <cstring>
+-#if WASMEDGE_OS_LINUX
++#if WASMEDGE_OS_LINUX || WASMEDGE_OS_GENODE
+ 
+ #include "common/errcode.h"
+ #include "host/wasi/environ.h"
+@@ -217,9 +217,11 @@
+     if (FdFlags & O_APPEND) {
+       FdStat.fs_flags |= __WASI_FDFLAGS_APPEND;
+     }
++#if !WASMEDGE_OS_GENODE
+     if (FdFlags & O_DSYNC) {
+       FdStat.fs_flags |= __WASI_FDFLAGS_DSYNC;
+     }
++#endif
+     if (FdFlags & O_NONBLOCK) {
+       FdStat.fs_flags |= __WASI_FDFLAGS_NONBLOCK;
+     }
+@@ -240,12 +242,14 @@
+   if (FdFlags & __WASI_FDFLAGS_APPEND) {
+     SysFlag |= O_APPEND;
+   }
++#if !WASMEDGE_OS_GENODE
+   if (FdFlags & __WASI_FDFLAGS_DSYNC) {
+     SysFlag |= O_DSYNC;
+   }
+   if (FdFlags & __WASI_FDFLAGS_RSYNC) {
+     SysFlag |= O_RSYNC;
+   }
++#endif
+   if (FdFlags & __WASI_FDFLAGS_SYNC) {
+     SysFlag |= O_SYNC;
+   }
+@@ -514,7 +518,9 @@
+     __wasi_dirent_t *const Dirent =
+         reinterpret_cast<__wasi_dirent_t *>(Dir.Buffer.data());
+     Dirent->d_next = Dir.Cookie;
++#if !WASMEDGE_OS_GENODE
+     Dirent->d_ino = SysDirent->d_ino;
++#endif
+     Dirent->d_type = fromFileType(SysDirent->d_type);
+     Dirent->d_namlen = Name.size();
+     std::copy(Name.cbegin(), Name.cend(),
+@@ -1321,7 +1327,7 @@
+   return {};
+ }
+ 
+-#if __GLIBC_PREREQ(2, 8)
++#if !WASMEDGE_OS_GENODE && __GLIBC_PREREQ(2, 8)
+ WasiExpect<void> Poller::Timer::create(__wasi_clockid_t Clock,
+                                        __wasi_timestamp_t Timeout,
+                                        __wasi_timestamp_t,
+@@ -1401,7 +1407,7 @@
+ }
+ #endif
+ 
+-#if __GLIBC_PREREQ(2, 8)
++#if !WASMEDGE_OS_GENODE && __GLIBC_PREREQ(2, 8)
+ WasiExpect<void> Epoller::Timer::create(__wasi_clockid_t Clock,
+                                         __wasi_timestamp_t Timeout,
+                                         __wasi_timestamp_t,
+@@ -1476,6 +1482,9 @@
+ 
+ Poller::Poller(__wasi_size_t Count)
+     : FdHolder(
++#if WASMEDGE_OS_GENODE
++-1) {
++#else
+ #if __GLIBC_PREREQ(2, 9)
+           ::epoll_create1(EPOLL_CLOEXEC)
+ #else
+@@ -1488,22 +1497,27 @@
+     return;
+   }
+ #endif
++#endif
+   Events.reserve(Count);
+ }
+ 
+ Epoller::Epoller(__wasi_size_t Count, int fd) {
+   if (fd == -1) {
++#if WASMEDGE_OS_GENODE
++    int new_fd = 1u;
++#else
+ #if __GLIBC_PREREQ(2, 9)
+     auto new_fd = ::epoll_create1(EPOLL_CLOEXEC);
+ #else
+     auto new_fd = ::epoll_create(Count);
+ #endif
++#endif
+     emplace(new_fd);
+   } else {
+     emplace(fd);
+   }
+   Cleanup = false;
+-#if !__GLIBC_PREREQ(2, 9)
++#if !WASMEDGE_OS_GENODE && !__GLIBC_PREREQ(2, 9)
+   if (auto Res = ::fcntl(Fd, F_SETFD, FD_CLOEXEC); unlikely(Res != 0)) {
+     reset();
+     return;
+@@ -1533,6 +1547,7 @@
+     return WasiUnexpect(Res);
+   }
+ 
++#if !WASMEDGE_OS_GENODE
+   epoll_event EPollEvent;
+   EPollEvent.events = EPOLLIN;
+ #if defined(EPOLLRDHUP)
+@@ -1548,10 +1563,11 @@
+     return WasiUnexpect(fromErrNo(errno));
+   }
+   Iter->second.ReadIndex = Events.size() - 1;
++#endif
+   return {};
+ }
+ 
+-WasiExpect<void> Poller::read(const INode &Fd,
++WasiExpect<void> Poller::read(const INode &Fd [[maybe_unused]],
+                               __wasi_userdata_t UserData) noexcept {
+   try {
+     Events.push_back({UserData,
+@@ -1562,6 +1578,7 @@
+     return WasiUnexpect(__WASI_ERRNO_NOMEM);
+   }
+ 
++#if !WASMEDGE_OS_GENODE
+   epoll_event EPollEvent;
+   EPollEvent.events = EPOLLIN;
+ #if defined(EPOLLRDHUP)
+@@ -1586,10 +1603,11 @@
+ 
+   Iter->second.Events = EPollEvent.events;
+   Iter->second.ReadIndex = Events.size() - 1;
++#endif
+   return {};
+ }
+ 
+-WasiExpect<void> Poller::write(const INode &Fd,
++WasiExpect<void> Poller::write(const INode &Fd [[maybe_unused]],
+                                __wasi_userdata_t UserData) noexcept {
+   try {
+     Events.push_back({UserData,
+@@ -1599,6 +1617,7 @@
+   } catch (std::bad_alloc &) {
+     return WasiUnexpect(__WASI_ERRNO_NOMEM);
+   }
++#if !WASMEDGE_OS_GENODE
+   epoll_event EPollEvent;
+   EPollEvent.events = EPOLLOUT;
+ #if defined(EPOLLRDHUP)
+@@ -1623,10 +1642,12 @@
+ 
+   Iter->second.Events = EPollEvent.events;
+   Iter->second.WriteIndex = Events.size() - 1;
++#endif
+   return {};
+ }
+ 
+-WasiExpect<void> Poller::wait(CallbackType Callback) noexcept {
++WasiExpect<void> Poller::wait(CallbackType Callback [[maybe_unused]]) noexcept {
++#if !WASMEDGE_OS_GENODE
+   std::vector<struct epoll_event> EPollEvents;
+   try {
+     EPollEvents.resize(Events.size());
+@@ -1696,14 +1717,16 @@
+       ProcessEvent(Callback, EPollEvent, Iter->second.WriteIndex);
+     }
+   }
++#endif
+   return {};
+ }
+ 
+-WasiExpect<void> Epoller::clock(__wasi_clockid_t Clock,
+-                                __wasi_timestamp_t Timeout,
+-                                __wasi_timestamp_t Precision,
+-                                __wasi_subclockflags_t Flags,
+-                                __wasi_userdata_t UserData) noexcept {
++WasiExpect<void> Epoller::clock(__wasi_clockid_t Clock [[maybe_unused]],
++                                __wasi_timestamp_t Timeout [[maybe_unused]],
++                                __wasi_timestamp_t Precision [[maybe_unused]],
++                                __wasi_subclockflags_t Flags [[maybe_unused]],
++                                __wasi_userdata_t UserData [[maybe_unused]]) noexcept {
++#if !WASMEDGE_OS_GENODE
+   try {
+     Events.push_back({UserData,
+                       __WASI_ERRNO_SUCCESS,
+@@ -1734,12 +1757,14 @@
+     return WasiUnexpect(fromErrNo(errno));
+   }
+   Iter->second.ReadIndex = Events.size() - 1;
++#endif
+   return {};
+ }
+ 
+ WasiExpect<void>
+-Epoller::read(const INode &Fd, __wasi_userdata_t UserData,
+-              std::unordered_map<int, uint32_t> &Registration) noexcept {
++Epoller::read(const INode &Fd [[maybe_unused]], __wasi_userdata_t UserData [[maybe_unused]],
++              std::unordered_map<int, uint32_t> &Registration [[maybe_unused]]) noexcept {
++#if !WASMEDGE_OS_GENODE
+   try {
+     Events.push_back({UserData,
+                       __WASI_ERRNO_SUCCESS,
+@@ -1789,13 +1814,15 @@
+   }
+   Iter->second.Events = EPollEvent.events;
+   Iter->second.ReadIndex = Events.size() - 1;
++#endif
+   return {};
+ }
+ 
+ WasiExpect<void>
+-Epoller::write(const INode &Fd, __wasi_userdata_t UserData,
+-               std::unordered_map<int, uint32_t> &Registration) noexcept {
++Epoller::write(const INode &Fd [[maybe_unused]], __wasi_userdata_t UserData [[maybe_unused]],
++               std::unordered_map<int, uint32_t> &Registration [[maybe_unused]]) noexcept {
+ 
++#if !WASMEDGE_OS_GENODE
+   try {
+     Events.push_back({UserData,
+                       __WASI_ERRNO_SUCCESS,
+@@ -1843,12 +1870,14 @@
+   }
+   Iter->second.Events = EPollEvent.events;
+   Iter->second.WriteIndex = Events.size() - 1;
++#endif
+   return {};
+ }
+ 
+ WasiExpect<void>
+-Epoller::wait(CallbackType Callback,
+-              std::unordered_map<int, uint32_t> &Registration) noexcept {
++Epoller::wait(CallbackType Callback [[maybe_unused]],
++              std::unordered_map<int, uint32_t> &Registration [[maybe_unused]]) noexcept {
++#if !WASMEDGE_OS_GENODE
+   std::vector<struct epoll_event> EPollEvents;
+   try {
+     EPollEvents.resize(Events.size());
+@@ -1941,7 +1970,7 @@
+       ProcessEvent(Callback, EPollEvent, Iter->second.WriteIndex);
+     }
+   }
+-
++#endif
+   return {};
+ }
+ 
++++ src/lib/host/wasi/linux.h	2023-01-25 09:57:53.000000000 +0100
+@@ -2,7 +2,7 @@
+ // SPDX-FileCopyrightText: 2019-2022 Second State INC
+ 
+ #include "common/defines.h"
+-#if !WASMEDGE_OS_LINUX
++#if !WASMEDGE_OS_LINUX && !WASMEDGE_OS_GENODE
+ #error
+ #endif
+ 
+@@ -17,10 +17,16 @@
+ #include <csignal>
+ #include <cstdio>
+ #include <ctime>
++#if WASMEDGE_OS_LINUX
+ #include <dirent.h>
++#elif WASMEDGE_OS_GENODE
++#include <sys/dirent.h>
++#endif
+ #include <fcntl.h>
+ #include <sched.h>
++#if WASMEDGE_OS_LINUX
+ #include <sys/epoll.h>
++#endif
+ #include <sys/ioctl.h>
+ #include <sys/time.h>
+ #include <sys/types.h>
+@@ -49,7 +55,7 @@
+ #endif
+ #endif
+ 
+-#if __GLIBC_PREREQ(2, 8)
++#if WASMEDGE_OS_LINUX && __GLIBC_PREREQ(2, 8)
+ #include <sys/timerfd.h>
+ #endif
+ 
+@@ -219,8 +225,10 @@
+ 
+ inline constexpr __wasi_errno_t fromEAIErrNo(int ErrNo) noexcept {
+   switch (ErrNo) {
++#if !WASMEDGE_OS_GENODE
+   case EAI_ADDRFAMILY:
+     return __WASI_ERRNO_AIADDRFAMILY;
++#endif
+   case EAI_AGAIN:
+     return __WASI_ERRNO_AIAGAIN;
+   case EAI_BADFLAGS:
+@@ -231,8 +239,10 @@
+     return __WASI_ERRNO_AIFAMILY;
+   case EAI_MEMORY:
+     return __WASI_ERRNO_AIMEMORY;
++#if !WASMEDGE_OS_GENODE
+   case EAI_NODATA:
+     return __WASI_ERRNO_AINODATA;
++#endif
+   case EAI_NONAME:
+     return __WASI_ERRNO_AINONAME;
+   case EAI_SERVICE:

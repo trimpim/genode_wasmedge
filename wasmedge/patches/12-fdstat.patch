@@ -1,0 +1,38 @@
++++ src/lib/host/wasi/wasifunc.cpp	2023-01-29 23:44:21.016664033 +0100
+@@ -543,9 +543,10 @@
+   return __WASI_ERRNO_SUCCESS;
+ }
+ 
+-Expect<uint32_t> WasiFdFdstatGet::body(const Runtime::CallingFrame &Frame,
+-                                       int32_t Fd,
+-                                       uint32_t /* Out */ FdStatPtr) {
++Expect<uint32_t> WasiFdFdstatGet::body(const Runtime::CallingFrame &Frame [[maybe_unused]],
++                                       int32_t Fd [[maybe_unused]],
++                                       uint32_t /* Out */ FdStatPtr [[maybe_unused]]) {
++/*
+   // Check memory instance from module.
+   auto *MemInst = Frame.getMemoryByIndex(0);
+   if (MemInst == nullptr) {
+@@ -562,11 +563,13 @@
+   if (auto Res = Env.fdFdstatGet(WasiFd, *FdStat); unlikely(!Res)) {
+     return Res.error();
+   }
++*/
+   return __WASI_ERRNO_SUCCESS;
+ }
+ 
+ Expect<uint32_t> WasiFdFdstatSetFlags::body(const Runtime::CallingFrame &,
+-                                            int32_t Fd, uint32_t FsFlags) {
++                                            int32_t Fd [[maybe_unused]], uint32_t FsFlags [[maybe_unused]]) {
++/*
+   __wasi_fdflags_t WasiFdFlags;
+   if (auto Res = cast<__wasi_fdflags_t>(FsFlags); unlikely(!Res)) {
+     return Res.error();
+@@ -579,6 +582,7 @@
+   if (auto Res = Env.fdFdstatSetFlags(WasiFd, WasiFdFlags); unlikely(!Res)) {
+     return Res.error();
+   }
++*/
+   return __WASI_ERRNO_SUCCESS;
+ }
+ 

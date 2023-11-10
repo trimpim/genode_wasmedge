@@ -1,0 +1,10 @@
++++ src/include/spdlog/details/os-inl.h	2022-11-24 08:41:49.784891108 +0100
+@@ -344,7 +344,7 @@
+     int tid = (!retval) ? buf.__pi_tid : 0;
+     return static_cast<size_t>(tid);
+ #elif defined(__DragonFly__) || defined(__FreeBSD__)
+-    return static_cast<size_t>(::pthread_getthreadid_np());
++    return 0ul;
+ #elif defined(__NetBSD__)
+     return static_cast<size_t>(::_lwp_self());
+ #elif defined(__OpenBSD__)

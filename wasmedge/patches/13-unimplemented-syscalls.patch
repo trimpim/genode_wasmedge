@@ -1,0 +1,132 @@
++++ src/lib/host/wasi/CMakeLists.txt	2023-06-30 12:57:48.173000000 +0200
+@@ -6,7 +6,7 @@
+ elseif(WIN32)
+   set(WASMEDGE_WASI_SRCS clock-win.cpp environ-win.cpp inode-win.cpp win.cpp)
+ else()
+-  set(WASMEDGE_WASI_SRCS clock-linux.cpp environ-linux.cpp inode-linux.cpp)
++  set(WASMEDGE_WASI_SRCS clock-linux.cpp environ-linux.cpp inode-linux.cpp dummies.cpp)
+ endif()
+ 
+ wasmedge_add_library(wasmedgeHostModuleWasi
++++ src/lib/host/wasi/dummies.cpp	2023-06-30 13:41:22.407000000 +0200
+@@ -0,0 +1,119 @@
++#include "common/defines.h"
++#if WASMEDGE_OS_GENODE
++#include <libc/stdio.h>
++#include <libc/time.h>
++#include <libc/unistd.h>
++#include <sys/fcntl.h>
++#include <sys/stat.h>
++#include <sys/uio.h>
++#include <cstdio>
++#include <errno.h>
++extern "C" {
++
++int faccessat(int, const char *, int, int)
++{
++        fprintf(stderr, "error: %s not implemented\n", __func__);
++        errno = EPERM;
++        return -1;
++}
++
++int futimens(int, const struct timespec *)
++{
++        fprintf(stderr, "error: %s not implemented\n", __func__);
++        errno = EPERM;
++        return -1;
++}
++
++int linkat(int, const char *, int, const char *, int)
++{
++        fprintf(stderr, "error: %s not implemented\n", __func__);
++        errno = EPERM;
++        return -1;
++}
++
++int mkdirat(int, const char *, mode_t)
++{
++        fprintf(stderr, "error: %s not implemented\n", __func__);
++        errno = EPERM;
++        return -1;
++}
++
++int posix_fallocate(int, off_t, off_t)
++{
++        fprintf(stderr, "error: %s not implemented\n", __func__);
++        errno = EPERM;
++        return -1;
++}
++
++ssize_t preadv(int, const struct iovec *, int, off_t)
++{
++        fprintf(stderr, "error: %s not implemented\n", __func__);
++        errno = EPERM;
++        return -1;
++}
++
++ssize_t pwritev(int, const struct iovec *, int, off_t)
++{
++        fprintf(stderr, "error: %s not implemented\n", __func__);
++        errno = EPERM;
++        return -1;
++}
++
++ssize_t readlinkat(int, const char * __restrict, char * __restrict, size_t)
++{
++        fprintf(stderr, "error: %s not implemented\n", __func__);
++        errno = EPERM;
++        return -1;
++}
++
++int renameat(int, const char *, int, const char *)
++{
++        fprintf(stderr, "error: %s not implemented\n", __func__);
++        errno = EPERM;
++        return -1;
++}
++
++int symlinkat(const char *, int, const char *)
++{
++        fprintf(stderr, "error: %s not implemented\n", __func__);
++        errno = EPERM;
++        return -1;
++}
++
++int timer_create(clockid_t, struct sigevent *__restrict, timer_t *__restrict)
++{
++        fprintf(stderr, "error: %s not implemented\n", __func__);
++        errno = EPERM;
++        return -1;
++}
++
++int timer_delete(timer_t)
++{
++        fprintf(stderr, "error: %s not implemented\n", __func__);
++        errno = EPERM;
++        return -1;
++}
++
++int timer_settime(timer_t, int, const struct itimerspec *__restrict, struct itimerspec *__restrict)
++{
++        fprintf(stderr, "error: %s not implemented\n", __func__);
++        errno = EPERM;
++        return -1;
++}
++
++int unlinkat(int, const char *, int)
++{
++        fprintf(stderr, "error: %s not implemented\n", __func__);
++        errno = EPERM;
++        return -1;
++}
++
++int utimensat(int, const char *, const struct timespec *, int)
++{
++        fprintf(stderr, "error: %s not implemented\n", __func__);
++        errno = EPERM;
++        return -1;
++}
++
++}
++#endif
++

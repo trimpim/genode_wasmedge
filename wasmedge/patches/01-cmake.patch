@@ -1,0 +1,14 @@
+--- src/lib/api/CMakeLists.txt	2022-12-19 13:54:22.766865257 +0100
++++ src/lib/api/CMakeLists.txt	2022-12-19 13:54:22.766865257 +0100
+@@ -118,11 +118,6 @@
+     ${PROJECT_SOURCE_DIR}/include/api
+   )
+ 
+-  install(TARGETS wasmedge_shared
+-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+-    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/wasmedge
+-  )
+-
+ endif()
+ 
+ if(WASMEDGE_BUILD_STATIC_LIB)

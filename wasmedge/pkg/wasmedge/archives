@@ -1,0 +1,8 @@
+genodelabs/src/init
+genodelabs/src/libc
+genodelabs/src/posix
+genodelabs/src/vfs
+genodelabs/src/vfs_lwip
+genodelabs/src/zlib
+trimpim/src/llvm
+trimpim/src/spdlog

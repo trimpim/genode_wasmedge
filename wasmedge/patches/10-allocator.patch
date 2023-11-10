@@ -1,0 +1,100 @@
++++ src/lib/system/allocator.cpp	2023-01-24 11:23:14.101799382 +0100
+@@ -7,8 +7,8 @@
+ #include "common/defines.h"
+ #include "common/errcode.h"
+ 
+-#if defined(HAVE_MMAP) && defined(__x86_64__) || defined(__aarch64__) ||       \
+-    defined(__arm__)
++#if (defined(HAVE_MMAP) && defined(__x86_64__) || defined(__aarch64__) ||       \
++     defined(__arm__)) && !defined(WASMEDGE_OS_GENODE)
+ #include <sys/mman.h>
+ #elif WASMEDGE_OS_WINDOWS
+ #include <boost/winapi/basic_types.hpp>
+@@ -59,7 +59,8 @@
+ 
+ [[gnu::visibility("default")]] uint8_t *
+ Allocator::allocate(uint32_t PageCount) noexcept {
+-#if defined(HAVE_MMAP) && defined(__x86_64__) || defined(__aarch64__)
++#if (defined(HAVE_MMAP) && defined(__x86_64__) || defined(__aarch64__)) && !defined(WASMEDGE_OS_GENODE)
++printf("%s()  ::  %d   page_count=%ul\n",__func__,__LINE__,PageCount);
+   auto Reserved = reinterpret_cast<uint8_t *>(
+       mmap(nullptr, k12G, PROT_NONE,
+            MAP_PRIVATE | MAP_ANONYMOUS | MAP_NORESERVE, -1, 0));
+@@ -103,7 +104,7 @@
+ Allocator::resize(uint8_t *Pointer, uint32_t OldPageCount,
+                   uint32_t NewPageCount) noexcept {
+   assuming(NewPageCount > OldPageCount);
+-#if defined(HAVE_MMAP) && defined(__x86_64__) || defined(__aarch64__)
++#if (defined(HAVE_MMAP) && defined(__x86_64__) || defined(__aarch64__)) && !defined(WASMEDGE_OS_GENODE)
+   if (mmap(Pointer + OldPageCount * kPageSize,
+            (NewPageCount - OldPageCount) * kPageSize, PROT_READ | PROT_WRITE,
+            MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0) == MAP_FAILED) {
+@@ -132,7 +133,7 @@
+ 
+ [[gnu::visibility("default")]] void Allocator::release(uint8_t *Pointer,
+                                                        uint32_t) noexcept {
+-#if defined(HAVE_MMAP) && defined(__x86_64__) || defined(__aarch64__)
++#if (defined(HAVE_MMAP) && defined(__x86_64__) || defined(__aarch64__)) && !defined(WASMEDGE_OS_GENODE)
+   if (Pointer == nullptr) {
+     return;
+   }
+@@ -145,7 +146,7 @@
+ }
+ 
+ uint8_t *Allocator::allocate_chunk(uint64_t Size) noexcept {
+-#if defined(HAVE_MMAP)
++#if (defined(HAVE_MMAP)) && !defined(WASMEDGE_OS_GENODE)
+   if (auto Pointer = mmap(nullptr, Size, PROT_READ | PROT_WRITE,
+                           MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+       unlikely(Pointer == MAP_FAILED)) {
+@@ -163,13 +164,13 @@
+     return reinterpret_cast<uint8_t *>(Pointer);
+   }
+ #else
+-  return std::malloc(Size);
++  return reinterpret_cast<uint8_t *>(std::malloc(Size));
+ #endif
+ }
+ 
+ void Allocator::release_chunk(uint8_t *Pointer,
+                               uint64_t Size [[maybe_unused]]) noexcept {
+-#if defined(HAVE_MMAP)
++#if (defined(HAVE_MMAP)) && !defined(WASMEDGE_OS_GENODE)
+   munmap(Pointer, Size);
+ #elif WASMEDGE_OS_WINDOWS
+   boost::winapi::VirtualFree(Pointer, 0, boost::winapi::MEM_RELEASE_);
+@@ -178,8 +179,8 @@
+ #endif
+ }
+ 
+-bool Allocator::set_chunk_executable(uint8_t *Pointer, uint64_t Size) noexcept {
+-#if defined(HAVE_MMAP)
++bool Allocator::set_chunk_executable(uint8_t *Pointer [[maybe_unused]], uint64_t Size [[maybe_unused]]) noexcept {
++#if (defined(HAVE_MMAP)) && !defined(WASMEDGE_OS_GENODE)
+   return mprotect(Pointer, Size, PROT_EXEC | PROT_READ) == 0;
+ #elif WASMEDGE_OS_WINDOWS
+   boost::winapi::DWORD_ OldPerm;
+@@ -190,8 +191,8 @@
+ #endif
+ }
+ 
+-bool Allocator::set_chunk_readable(uint8_t *Pointer, uint64_t Size) noexcept {
+-#if defined(HAVE_MMAP)
++bool Allocator::set_chunk_readable(uint8_t *Pointer [[maybe_unused]], uint64_t Size [[maybe_unused]]) noexcept {
++#if (defined(HAVE_MMAP)) && !defined(WASMEDGE_OS_GENODE)
+   return mprotect(Pointer, Size, PROT_READ) == 0;
+ #elif WASMEDGE_OS_WINDOWS
+   boost::winapi::DWORD_ OldPerm;
+@@ -202,9 +203,9 @@
+ #endif
+ }
+ 
+-bool Allocator::set_chunk_readable_writable(uint8_t *Pointer,
+-                                            uint64_t Size) noexcept {
+-#if defined(HAVE_MMAP)
++bool Allocator::set_chunk_readable_writable(uint8_t *Pointer [[maybe_unused]],
++                                            uint64_t Size [[maybe_unused]]) noexcept {
++#if (defined(HAVE_MMAP)) && !defined(WASMEDGE_OS_GENODE)
+   return mprotect(Pointer, Size, PROT_READ | PROT_WRITE) == 0;
+ #elif WASMEDGE_OS_WINDOWS
+   boost::winapi::DWORD_ OldPerm;

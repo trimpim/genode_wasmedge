@@ -1,0 +1,49 @@
++++ src/lib/loader/loader.cpp	2023-01-24 10:31:26.418916389 +0100
+@@ -13,6 +13,8 @@
+ #include <system_error>
+ #include <utility>
+ 
++# if !defined(WASMEDGE_OS_GENODE)
++
+ namespace WasmEdge {
+ namespace Loader {
+ 
+@@ -229,3 +231,38 @@
+ 
+ } // namespace Loader
+ } // namespace WasmEdge
++
++#else  /* !defined(WASMEDGE_OS_GENODE) */
++
++namespace WasmEdge {
++namespace Loader {
++
++/// Load data from file path. See "include/loader/loader.h".
++Expect<std::vector<Byte>> Loader::loadFile(const std::filesystem::path &) {
++  return Unexpect(ErrCode::Value::IllegalPath);
++}
++
++/// Parse module from file path. See "include/loader/loader.h".
++Expect<std::unique_ptr<AST::Module>>
++Loader::parseModule(const std::filesystem::path &) {
++  return Unexpect(ErrCode::Value::IllegalPath);
++}
++
++Expect<std::unique_ptr<AST::Module>>
++Loader::parseModule(Span<const uint8_t> Code) {
++  auto Mod = std::make_unique<AST::Module>();
++  if (auto Res = FMgr.setCode(Code); !Res) {
++    return Unexpect(Res);
++  }
++  //if (auto Res = Mod->loadBinary(FMgr, Conf)) {
++  //  return Mod;
++  //} else {
++  //  return Unexpect(Res);
++  //}
++  return Unexpect(ErrCode::Value::IllegalPath);
++}
++
++} // namespace Loader
++} // namespace WasmEdge
++
++#endif  /* !defined(WASMEDGE_OS_GENODE) */

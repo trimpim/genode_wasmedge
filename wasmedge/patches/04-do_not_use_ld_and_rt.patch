@@ -1,0 +1,51 @@
++++ src/cmake/Helper.cmake	2022-12-13 16:04:45.363438863 +0100
+@@ -174,7 +174,6 @@
+   endif()
+ 
+   list(APPEND WASMEDGE_LLVM_LINK_SHARED_COMPONENTS
+-    dl
+     pthread
+   )
+   if(APPLE)
+@@ -184,9 +183,6 @@
+       xar
+     )
+   elseif(UNIX)
+-    list(APPEND WASMEDGE_LLVM_LINK_SHARED_COMPONENTS
+-      rt
+-    )
+     if(WASMEDGE_BUILD_STATIC_LIB)
+       # Static library will forcefully turn off the LTO.
+       # Therefore, libz and libtinfo can be statically linked.
+--- src/lib/host/wasi/CMakeLists.txt	2022-12-13 16:04:09.286817014 +0100
++++ src/lib/host/wasi/CMakeLists.txt	2022-12-13 16:05:29.804204637 +0100
+@@ -29,13 +29,6 @@
+   wasmedgeSystem
+ )
+ 
+-if(NOT APPLE AND NOT WIN32 AND NOT ANDROID)
+-  target_link_libraries(wasmedgeHostModuleWasi
+-    PUBLIC
+-    rt
+-  )
+-endif()
+-
+ if(WIN32)
+   target_link_libraries(wasmedgeHostModuleWasi
+   PRIVATE
+--- src/lib/loader/CMakeLists.txt	2022-12-13 16:04:09.286817014 +0100
++++ src/lib/loader/CMakeLists.txt	2022-12-13 16:05:54.196624842 +0100
+@@ -14,13 +14,6 @@
+   std::filesystem
+ )
+ 
+-if(NOT WIN32)
+-  target_link_libraries(wasmedgeLoaderFileMgr
+-    PUBLIC
+-    dl
+-  )
+-endif()
+-
+ wasmedge_add_library(wasmedgeLoader
+   ast/module.cpp
+   ast/section.cpp

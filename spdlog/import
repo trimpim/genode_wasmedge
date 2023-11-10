@@ -1,0 +1,15 @@
+LICENSE      := MIT
+VERSION      := 1.11.0
+
+DOWNLOADS    += spdlog.archive
+
+URL(spdlog)  := https://github.com/gabime/spdlog/archive/refs/tags/v$(VERSION).tar.gz
+DIR(spdlog)  := src
+SHA(spdlog)  := ca5cae8d6cac15dae0ec63b21d6ad3530070650f68076f3a4a862ca293a858bb
+
+PATCHES      += patches/00-cmake_include_files.patch
+PATCHES      += patches/00-cmake-debug_suffix.patch
+PATCHES      += patches/01-thread_id.patch
+PATCHES      += patches/03-disable_deprecated.patch
+
+# vim: ft=make

@@ -1,0 +1,77 @@
+<runtime ram="28M" caps="1500" binary="init">
+
+	<requires>
+		<nic tap_name="tap0"/>
+		<timer/>
+	</requires>
+
+	<content>
+		<!-- Genode artifacts -->
+		<rom label="init"/>
+		<rom label="libc.lib.so"/>
+		<rom label="libm.lib.so"/>
+		<rom label="posix.lib.so"/>
+		<rom label="vfs.lib.so"/>
+		<rom label="vfs_lwip.lib.so"/>
+		<rom label="zlib.lib.so"/>
+
+		<!-- ../spdlog artifacts -->
+		<rom label="libspdlog.lib.so"/>
+
+		<!-- ../llvm artifacts -->
+		<rom label="libc++.lib.so"/>
+		<rom label="libc++abi.lib.so"/>
+		<rom label="libunwind.lib.so"/>
+
+		<!-- local artifacts -->
+		<rom label="app.tar"/>
+		<rom label="libwasmedge.lib.so"/>
+		<rom label="wasmedge"/>
+	</content>
+
+	<config>
+		<parent-provides>
+			<service name="CPU"/>
+			<service name="LOG"/>
+			<service name="PD"/>
+			<service name="RM"/>
+			<service name="ROM"/>
+			<service name="Timer"/>
+			<service name="Nic"/>
+		</parent-provides>
+
+		<start name="wasmedge" caps="1200">
+			<binary name="wasmedge"/>
+			<resource name="RAM" quantum="24M"/>
+			<config ld_verbose="yes">
+				<arg value="wasmedge"/>
+				<arg value="app.wasm"/>
+				<arg value="start"/>
+				<libc stdin="/dev/null" stdout="/dev/log" stderr="/dev/log" rtc="/dev/rtc" socket="/socket"/>
+				<vfs>
+					<dir name="dev">
+						<null/>
+						<log/>
+						<inline name="random">01234567890123456789</inline>
+						<inline name="urandom">01234567890123456789</inline>
+						<inline name="rtc">2019-12-08 00:00:00</inline>
+					</dir>
+					<dir name="socket">
+							<lwip dhcp="yes"/>
+					</dir>
+					<tar name="app.tar"/>
+				</vfs>
+			</config>
+			<route>
+				<service name="ROM" label="../../lib/api/libwasmedge.lib.so"> <parent label="libwasmedge.lib.so"/> </service>
+				<service name="ROM" label="../../lib/libc++.lib.so"> <parent label="libc++.lib.so"/> </service>
+				<service name="ROM" label="../../lib/libc++abi.lib.so"> <parent label="libc++abi.lib.so"/> </service>
+				<service name="ROM" label="../../lib/libunwind.lib.so"> <parent label="libunwind.lib.so"/> </service>
+				<service name="Nic"> <parent label="thing_servers"/> </service>
+				<any-service> <parent/> </any-service>
+			</route>
+		</start>
+
+	</config>
+
+</runtime>

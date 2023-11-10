@@ -1,0 +1,31 @@
++++ src/include/executor/executor.h	2022-12-20 07:48:09.081551989 +0100
+@@ -667,11 +667,11 @@
+   };
+ 
+   /// Pointer to current object.
+-  static thread_local Executor *This;
++  static Executor *This;
+   /// Stack for passing into compiled functions
+-  static thread_local Runtime::StackManager *CurrentStack;
++  static Runtime::StackManager *CurrentStack;
+   /// Execution context for compiled functions
+-  static thread_local ExecutionContextStruct ExecutionContext;
++  static ExecutionContextStruct ExecutionContext;
+   /// @}
+ 
+ private:
+--- src/lib/executor/engine/proxy.cpp	2022-12-19 15:59:46.951884819 +0100
++++ src/lib/executor/engine/proxy.cpp	2022-12-20 07:47:23.647428089 +0100
+@@ -9,9 +9,9 @@
+ namespace WasmEdge {
+ namespace Executor {
+ 
+-thread_local Executor *Executor::This = nullptr;
+-thread_local Runtime::StackManager *Executor::CurrentStack = nullptr;
+-thread_local Executor::ExecutionContextStruct Executor::ExecutionContext;
++Executor *Executor::This = nullptr;
++Runtime::StackManager *Executor::CurrentStack = nullptr;
++Executor::ExecutionContextStruct Executor::ExecutionContext;
+ 
+ template <typename RetT, typename... ArgsT>
+ struct Executor::ProxyHelper<Expect<RetT> (Executor::*)(Runtime::StackManager &,

@@ -1,0 +1,17 @@
+LICENSE    := Apache
+VERSION    := 11.1.0
+
+DOWNLOADS  += llvm.archive
+
+URL(llvm)  := https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-$(VERSION).tar.gz
+DIR(llvm)  := src
+SHA(llvm)  := 53a0719f3f4b0388013cfffd7b10c7d5682eece1929a9553c722348d1f866e79
+
+PATCHES    += patches/00-cmake-add_top_level_cmake_file.patch
+PATCHES    += patches/01-cmake-llvm_options.patch
+PATCHES    += patches/02-cmake-include_files.patch
+PATCHES    += patches/04-libcxx-config.patch
+PATCHES    += patches/05-delete_not_weak.patch
+PATCHES    += patches/06-cmake-do_not_add_local_libraries.patch
+
+# vim: ft=make

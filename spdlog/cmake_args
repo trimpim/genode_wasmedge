@@ -1,0 +1,5 @@
+-DCMAKE_BUILD_TYPE:string=Release
+-DSPDLOG_BUILD_EXAMPLE:bool=false
+-DSPDLOG_BUILD_SHARED:bool=true
+-DSPDLOG_INSTALL:bool=true
+-DSPDLOG_NO_THREAD_ID:bool=true
